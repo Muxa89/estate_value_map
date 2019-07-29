@@ -73,8 +73,6 @@ function runScrapper(config) {
     setTimeout(runScrapper, config.timeout || 1000, window.scrapper);
 }
 
-console.log("hello");
-
 (function runLoader() {
     'use strict'
     console.log('scrapper enabled');
