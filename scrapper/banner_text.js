@@ -1,6 +1,6 @@
-module.exports = `// ==UserScript==
+module.exports = version => `// ==UserScript==
 // @name         New Userscript
-// @version      0.1
+// @version      ${version}
 // @description  try to take over the world!
 // @author       You
 // @grant        none

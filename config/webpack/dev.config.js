@@ -1,6 +1,6 @@
 const { resolve } = require("path");
 const webpack = require("webpack");
-const banner = require("../../scrapper/banner_text.js");
+const getBanner = require("../../scrapper/banner_text.js");
 
 module.exports = {
   mode: "development",
@@ -29,7 +29,7 @@ module.exports = {
   },
   plugins: [
     new webpack.BannerPlugin({
-      banner,
+      banner: getBanner("1.0"),
       raw: true
     })
   ]
