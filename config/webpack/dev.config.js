@@ -9,7 +9,8 @@ module.exports = {
     extensions: [".js", ".ts"]
   },
   output: {
-    path: resolve("./public")
+    path: resolve("./dist"),
+    filename: "scrapper.user.js"
   },
   module: {
     rules: [
