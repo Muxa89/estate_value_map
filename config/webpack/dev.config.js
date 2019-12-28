@@ -1,6 +1,6 @@
 const { resolve } = require("path");
-const webpack = require("webpack");
-const getBanner = require("../../scrapper/banner_text.js");
+const GreasemonkeyBannerPlugin = require("../../util/greasemonkey_banner_plugin.js");
+const getBanner = require("../../scrapper/greasemonkey_banner.js");
 
 module.exports = {
   mode: "development",
@@ -28,9 +28,9 @@ module.exports = {
     contentBase: "public"
   },
   plugins: [
-    new webpack.BannerPlugin({
-      banner: getBanner("1.0"),
-      raw: true
+    new GreasemonkeyBannerPlugin({
+      distPath: resolve("./dist"),
+      getBanner
     })
   ]
 };
