@@ -4,15 +4,25 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --config=config/webpack/dev.config.js --no-inline",
+    "start": "webpack-dev-server --config=config/webpack/dev.config.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/lodash": "^4.14.149",
     "http-server": "^0.11.1",
-    "nedb": "^1.8.0"
+    "lodash": "^4.17.15",
+    "nedb": "^1.8.0",
+    "webpack": "^4.41.4"
   },
   "devDependencies": {
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "source-map-loader": "^0.2.4",
+    "ts-loader": "^6.2.1",
+    "typescript": "^3.7.4",
+    "webpack-cli": "^3.3.10",
+    "webpack-dev-server": "^3.10.1"
   }
 }
