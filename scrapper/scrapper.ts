@@ -3,8 +3,17 @@
 import { config } from "./configuration";
 import { IApi } from "./api";
 import { logger } from "./logger";
-import { get } from "lodash";
-import { IExtractedInfo } from "./scrappedInfo";
+import { get, curry, has } from "lodash";
+import {
+  flow,
+  toArray,
+  map,
+  filter,
+  compact,
+  eq,
+  get as fpget
+} from "lodash/fp";
+import { IExtractedInfo } from "./scrapped_info";
 
 export interface IScrapper {
   performScrapping(): void;
@@ -22,27 +31,18 @@ export class Scrapper implements IScrapper {
     this.api = api;
   }
 
-  private getRoot(): HTMLScriptElement | undefined {
-    const elements: HTMLScriptElement[] = <HTMLScriptElement[]>(
-      (<any>document.querySelector("div[class*='items-root-'"))
-    );
-    return (elements && elements.length > 0 && elements[0]) || undefined;
-  }
-
-  private getElementsToScrap(): HTMLScriptElement[] {
-    const root = this.getRoot();
-    logger.log("Root element", root);
-
+  private static getElementsToScrap(): HTMLCollection {
+    const root = document.querySelector("div[class*='items-root-'");
     if (!root) {
-      return;
+      throw new Error("Root element not found");
     }
+    logger.log({ root });
 
-    const children: HTMLScriptElement[] = get(root, "children", undefined);
-    logger.log("Children", children);
-    return children || [];
+    const children = get(root, "children", new HTMLCollection());
+    return children;
   }
 
-  private convertPropsToJson(props: Object): IExtractedInfo {
+  private static convertPropsToJson(props: Object): IExtractedInfo {
     return {
       id: get(props, "id"),
       title: get(props, "title"),
@@ -52,33 +52,35 @@ export class Scrapper implements IScrapper {
     } as IExtractedInfo;
   }
 
-  private extractChildInfo(el: Element): IExtractedInfo | undefined {
-    const props = get(
-      el,
-      ["__reactEventHandlers", "children", "props"],
-      undefined
-    );
+  private static extractChildInfo(el: Element): IExtractedInfo {
+    return flow([
+      fpget(["__reactEventHandlers", "children", "props"]),
+      this.convertPropsToJson
+    ])(el);
+  }
 
-    return props && this.convertPropsToJson(props);
+  private static getNewItems(storage: IStorage): IExtractedInfo[] {
+    const extractInfo = map(this.extractChildInfo);
+    const inStorage = curry(has)(storage);
+    const notInStorage = flow([inStorage, eq(false)]);
+    const filterNotInStorage = filter(notInStorage);
+    return flow([toArray, extractInfo, compact, filterNotInStorage])(
+      this.getElementsToScrap()
+    );
   }
 
   performScrapping() {
     if (!config.enabled) {
-      logger.log("Scrapper disabled.");
+      logger.log("Scrapper is disabled.");
       return;
     }
 
-    const elementsToScrap = this.getElementsToScrap();
-
-    const extractedInfo = elementsToScrap
-      .map(this.extractChildInfo)
-      .filter(el => el !== undefined);
-
-    const newElements: IExtractedInfo[] = extractedInfo.filter(
-      info => !(info.id in this.storage)
-    );
-    logger.log("New elements", newElements);
-
-    this.api.update(newElements);
+    try {
+      const newElements = Scrapper.getNewItems(this.storage);
+      this.api.update(newElements);
+      logger.log("New elements was sent to server", newElements);
+    } catch (err) {
+      logger.error("Error occured while scrapping elements", err);
+    }
   }
 }

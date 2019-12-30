@@ -1,4 +1,4 @@
-import { IExtractedInfo } from "./scrappedInfo";
+import { IExtractedInfo } from "./scrapped_info";
 import { logger } from "./logger";
 
 export interface IApi {
